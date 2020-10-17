@@ -1,31 +1,38 @@
 import React from "react";
-import "./App.css";
-import { gql, useQuery } from "@apollo/client";
-const GET_MARKET = gql`
-  query PageAssets {
-    assets(sort: [{ marketCapRank: ASC }], page: { limit: 25 }) {
-      id
-      assetName
-      assetSymbol
-      marketCap
-      markets {
-        marketSymbol
-        baseSymbol
-        exchangeSymbol
-        ticker {
-          lastPrice
-          highPrice
-          lowPrice
-          percentChange
-        }
-      }
-    }
-  }
-`;
+import { Switch, Route } from "react-router-dom";
+
+/** Containers */
+import Currency from "./Containers/Currency";
+import CurrencyList from "./Containers/CurrencyList";
+import NotFound from "./Containers/NotFound";
+
+/** Components */
+import Header from "./Components/Header";
+
+/** Contexies */
+import { SearchContext } from "./Contexts/Search/SearchContext";
+import SearchContextManager from "./Contexts/Search/SearchContextManager";
+
+/** styles */
+import { AppWrapper } from "./AppStyles";
 
 function App() {
-  const { loading, error, data } = useQuery(GET_MARKET);
-  return loading ? <p>Loading...</p> : <div>{JSON.stringify(data)}</div>;
+  const { ...searchContextData } = SearchContextManager();
+
+  return (
+    <SearchContext.Provider value={{ ...searchContextData }}>
+      <AppWrapper>
+        <Header />
+        <main>
+          <Switch>
+            <Route exact path="/" component={CurrencyList} />
+            <Route exact path="/currency/:id" component={Currency} />
+            <Route path="*" component={NotFound} />
+          </Switch>
+        </main>
+      </AppWrapper>
+    </SearchContext.Provider>
+  );
 }
 
 export default App;
